@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrange in correct order</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:200px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    color:#333;
+}
+
+select{
+    width:100%;
+    padding:10px;
+    font-size:16px;
+    margin-bottom:20px;
+}
+
+.item{
+    background:#000080;
+    color:white;
+    padding:12px;
+    margin:8px 0;
+    border-radius:6px;
+    cursor:move;
+}
+
+.item:hover{
+    background:#4169E1;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    color:white;
+}
+
+.check{background:#2196F3;}
+.reset{background:#FF9800;}
+.shuffle{background:#9C27B0;}
+
+#result{
+    margin-top:15px;
+    font-size:20px;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Arrange in correct order</h1>
+
+<select id="activitySelect">
+    <option value="sandwich">🍞 Sandwich</option>
+    <option value="recipe">🍳 Recipe</option>
+    <option value="satnav">🚗 Sat Nav</option>
+    <option value="traffic">🚦 Traffic Lights</option>
+    <option value="washing">🧺 Washing Machine</option>
+    <option value="computer">💻 Computer Program</option>
+</select>
+
+<div id="list"></div>
+
+<div class="buttons">
+    <button class="check" onclick="checkAnswer()">✅ Check Answer</button>
+    <button class="reset" onclick="loadActivity()">🔄 Reset</button>
+    <button class="shuffle" onclick="shuffleItems()">🎲 Shuffle</button>
+</div>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+const activities = {
+
+sandwich:{
+steps:[
+"Add the filling",
+"Serve the sandwich",
+"Get two slices of bread",
+"Put the bread together",
+"Spread butter on the bread"
+],
+correct:[
+"Get two slices of bread",
+"Spread butter on the bread",
+"Add the filling",
+"Put the bread together",
+"Serve the sandwich"
+]
+},
+
+recipe:{
+steps:[
+"Serve meal",
+"Gather ingredients",
+"Cook ingredients",
+"Read recipe",
+"Prepare ingredients"
+],
+correct:[
+"Read recipe",
+"Gather ingredients",
+"Prepare ingredients",
+"Cook ingredients",
+"Serve meal"
+]
+},
+
+satnav:{
+steps:[
+"Follow directions",
+"Enter destination",
+"Arrive at destination",
+"Calculate route",
+"Start navigation"
+],
+correct:[
+"Enter destination",
+"Calculate route",
+"Start navigation",
+"Follow directions",
+"Arrive at destination"
+]
+},
+
+traffic:{
+steps:[
+"Amber light",
+"Cars stop",
+"Green light",
+"Red light",
+"Cars go"
+],
+correct:[
+"Green light",
+"Cars go",
+"Amber light",
+"Red light",
+"Cars stop"
+]
+},
+
+washing:{
+steps:[
+"Start wash cycle",
+"Add detergent",
+"Unload clothes",
+"Select programme",
+"Load clothes"
+],
+correct:[
+"Load clothes",
+"Add detergent",
+"Select programme",
+"Start wash cycle",
+"Unload clothes"
+]
+},
+
+computer:{
+steps:[
+"Display result",
+"Process data",
+"Input data",
+"Store output",
+"Validate input"
+],
+correct:[
+"Input data",
+"Validate input",
+"Process data",
+"Display result",
+"Store output"
+]
+}
+
+};
+
+let draggedItem = null;
+
+function renderItems(items){
+
+const list = document.getElementById("list");
+list.innerHTML = "";
+
+items.forEach(text=>{
+
+const item = document.createElement("div");
+item.className = "item";
+item.textContent = text;
+item.draggable = true;
+
+item.addEventListener("dragstart",()=>{
+draggedItem = item;
+});
+
+item.addEventListener("dragover",(e)=>{
+e.preventDefault();
+});
+
+item.addEventListener("drop",(e)=>{
+e.preventDefault();
+
+if(draggedItem !== item){
+
+const children = [...list.children];
+
+const draggedIndex = children.indexOf(draggedItem);
+const targetIndex = children.indexOf(item);
+
+if(draggedIndex < targetIndex){
+list.insertBefore(draggedItem,item.nextSibling);
+}else{
+list.insertBefore(draggedItem,item);
+}
+
+}
+});
+
+list.appendChild(item);
+
+});
+}
+
+function currentActivity(){
+return document.getElementById("activitySelect").value;
+}
+
+function loadActivity(){
+
+document.getElementById("result").innerHTML="";
+
+const activity = activities[currentActivity()];
+
+renderItems([...activity.steps]);
+
+}
+
+function shuffleItems(){
+
+const activity = [...activities[currentActivity()].steps];
+
+for(let i=activity.length-1;i>0;i--){
+
+let j=Math.floor(Math.random()*(i+1));
+
+[activity[i],activity[j]]=[activity[j],activity[i]];
+}
+
+renderItems(activity);
+
+document.getElementById("result").innerHTML="";
+}
+
+function checkAnswer(){
+
+const activity = activities[currentActivity()];
+
+const current = [...document.querySelectorAll(".item")]
+.map(item=>item.textContent);
+
+const result = document.getElementById("result");
+
+if(JSON.stringify(current)===JSON.stringify(activity.correct)){
+
+result.innerHTML="✅ Correct! Well done.";
+result.style.color="green";
+
+}else{
+
+result.innerHTML="❌ Not quite. Try again.";
+result.style.color="red";
+
+}
+}
+
+document.getElementById("activitySelect")
+.addEventListener("change",loadActivity);
+
+loadActivity();
+
+</script>
+
+</body>
+</html>
